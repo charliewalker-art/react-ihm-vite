@@ -5,6 +5,15 @@ import { LoginForm } from "../ui/uiAuth/LoginForm";
 import { ThemeToggle } from "../ui/uiAuth/ThemeToggle";
 import { UtensilsCrossed } from "lucide-react";
 
+// Table de correspondance pour la redirection par rôle
+const roleRoutes: Record<string, string> = {
+  RESPONSABLE_PERSONNEL: "/users",
+  MANAGER: "/manager",
+  SERVEUR: "/serveur",
+  CUISINIERE: "/cuisine",
+  CAISSIER: "/caisse",
+};
+
 const LoginPage = () => {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -26,12 +35,18 @@ const LoginPage = () => {
     }
   }, [dark]);
 
-  // Redirige si déjà connecté
+  // Redirige si déjà connecté (en utilisant le rôle stocké dans le localStorage)
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate("/dashboard");
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        const user = JSON.parse(savedUser);
+        navigate(roleRoutes[user.role] || "/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (username: string, password: string) => {
     setLoading(true);
@@ -40,7 +55,10 @@ const LoginPage = () => {
       const response = await login({ username, password });
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response));
-      navigate("/dashboard");
+      
+      // Modification ici : Redirection dynamique selon le rôle reçu
+      navigate(roleRoutes[response.role] || "/dashboard");
+      
     } catch (err: any) {
       const message =
         err?.response?.data?.message || "Erreur de connexion. Réessayez.";
@@ -51,7 +69,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50
+    <div className="min-h-screen bg-linear-to-br from-amber-50 via-orange-50 to-yellow-50
                     dark:from-gray-950 dark:via-gray-900 dark:to-gray-950
                     flex items-center justify-center p-4 transition-colors duration-300">
 
