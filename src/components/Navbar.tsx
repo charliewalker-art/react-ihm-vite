@@ -2,6 +2,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ThemeToggle } from "../ui/uiAuth/ThemeToggle";
 import { LogOut, UtensilsCrossed } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const roleLabel: Record<string, string> = {
   RESPONSABLE_PERSONNEL: "Responsable Personnel",
@@ -14,6 +15,7 @@ const roleLabel: Record<string, string> = {
 const Navbar = () => {
   const { getUser, logout } = useAuth();
   const user = getUser();
+  const navigate = useNavigate();
 
   const [dark, setDark] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -48,15 +50,18 @@ const Navbar = () => {
       {/* Droite */}
       <div className="flex items-center gap-4">
 
-        {/* Info utilisateur */}
-        <div className="hidden sm:flex flex-col items-end">
+        {/* Info utilisateur — cliquable → profil */}
+        <button
+          onClick={() => navigate("/profil")}
+          className="hidden sm:flex flex-col items-end hover:opacity-75 transition-opacity"
+        >
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
             {user?.prenom} {user?.nom}
           </span>
           <span className="text-xs text-amber-500 font-medium">
             {roleLabel[user?.role || ""] || user?.role}
           </span>
-        </div>
+        </button>
 
         <ThemeToggle dark={dark} onToggle={() => setDark(!dark)} />
 
