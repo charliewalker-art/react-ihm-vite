@@ -3,6 +3,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UsersPage from "./pages/UsersPage";
+import TablesPage from "./pages/TablesPage";
 
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardPage />
+          <TablesPage />
       </ProtectedRoute>
     ),
   },
@@ -59,10 +61,21 @@ export const router = createBrowserRouter([
     path: "/serveur",
     element: (
       <ProtectedRoute>
-        <ComingSoon title="Espace Serveur" />
+      <ComingSoon title="Espace Serveur" />
+       <TablesPage />
       </ProtectedRoute>
+      
     ),
   },
+
+  {
+  path: "/tables",
+  element: (
+    <ProtectedRoute>
+      <TablesPage />
+    </ProtectedRoute>
+  ),
+},
 
   // CUISINIERE
   {

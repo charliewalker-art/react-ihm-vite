@@ -33,7 +33,7 @@ export const useUtilisateur = () => {
 
   const toggleActif = async (id: number): Promise<UtilisateurResponse> => {
     const response = await axios.patch<UtilisateurResponse>(
-      `${API_URL}/api/utilisateurs/${id}/toggle`,
+      `${API_URL}/api/utilisateurs/${id}/desactiver`,
       {},
       getHeaders()
     );
