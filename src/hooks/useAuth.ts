@@ -1,13 +1,11 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 import type { LoginRequest, LoginResponse } from "../types/auth";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const useAuth = () => {
 
   const login = async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await axios.post<LoginResponse>(
-      `${API_URL}/api/auth/login`,
+    const response = await axiosInstance.post<LoginResponse>(
+      "/api/auth/login",
       data
     );
     return response.data;
@@ -16,6 +14,7 @@ export const useAuth = () => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    window.location.href = "/login";
   };
 
   const getToken = (): string | null => {
