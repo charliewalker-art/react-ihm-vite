@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { UserPlus, Loader2, Users } from "lucide-react";
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import { UserCard } from "../ui/uiUsers/UserCard";
 import { CreateUserModal } from "../ui/uiUsers/CreateUserModal";
 import { useUtilisateur } from "../hooks/useUtilisateur";
@@ -25,9 +25,7 @@ const UsersPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  useEffect(() => { fetchUsers(); }, []);
 
   const handleToggle = async (id: number) => {
     setTogglingId(id);
@@ -47,10 +45,8 @@ const UsersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <Navbar />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+    <Layout>
+      <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -97,16 +93,15 @@ const UsersPage = () => {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
-      {/* Modal */}
       {showModal && (
         <CreateUserModal
           onClose={() => setShowModal(false)}
           onSubmit={handleCreate}
         />
       )}
-    </div>
+    </Layout>
   );
 };
 

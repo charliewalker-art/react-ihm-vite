@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Loader2, LayoutGrid, Filter } from "lucide-react";
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import { TableCard } from "../ui/uiTables/TableCard";
 import { CreateTableModal } from "../ui/uiTables/CreateTableModal";
 import { useTable } from "../hooks/useTable";
@@ -82,10 +82,8 @@ const TablesPage = () => {
   const appelsActifs = tables.filter((t) => t.appelServeurActif).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <Navbar />
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+    <Layout>
+      <div className="max-w-6xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -159,7 +157,7 @@ const TablesPage = () => {
             ))}
           </div>
         )}
-      </main>
+      </div>
 
       {showModal && (
         <CreateTableModal
@@ -167,7 +165,7 @@ const TablesPage = () => {
           onSubmit={handleCreate}
         />
       )}
-    </div>
+    </Layout>
   );
 };
 

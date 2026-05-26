@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Save, User, ArrowLeft } from "lucide-react";
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import { useAuth } from "../hooks/useAuth";
 import { useUtilisateur } from "../hooks/useUtilisateur";
 import type { UpdateProfilRequest } from "../types/profil";
@@ -39,7 +39,6 @@ const ProfilPage = () => {
 
       const updated = await modifierProfil(data);
 
-      // Met à jour le localStorage
       const currentUser = getUser();
       localStorage.setItem("user", JSON.stringify({
         ...currentUser,
@@ -50,7 +49,6 @@ const ProfilPage = () => {
 
       setSuccess(true);
 
-      // Si username changé → reconnexion obligatoire
       if (form.username !== user?.username || form.password) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -72,10 +70,8 @@ const ProfilPage = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <Navbar />
-
-      <main className="max-w-lg mx-auto px-4 sm:px-6 py-10">
+    <Layout>
+      <div className="max-w-lg mx-auto">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -132,7 +128,6 @@ const ProfilPage = () => {
               </div>
             ))}
 
-            {/* Erreur */}
             {error && (
               <div className="px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20
                               border border-red-200 dark:border-red-800
@@ -141,7 +136,6 @@ const ProfilPage = () => {
               </div>
             )}
 
-            {/* Succès */}
             {success && (
               <div className="px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20
                               border border-emerald-200 dark:border-emerald-800
@@ -162,16 +156,13 @@ const ProfilPage = () => {
                          flex items-center justify-center gap-2
                          shadow-lg shadow-amber-200 dark:shadow-amber-900/30"
             >
-              {loading
-                ? <Loader2 size={18} className="animate-spin" />
-                : <Save size={18} />
-              }
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
               Sauvegarder
             </button>
           </form>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

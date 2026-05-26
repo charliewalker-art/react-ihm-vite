@@ -1,4 +1,4 @@
-import Navbar from "../components/Navbar";
+import Layout from "../components/Layout";
 import { useAuth } from "../hooks/useAuth";
 import { DashboardResponsable } from "../ui/uiDashboard/DashboardResponsable";
 import { DashboardManager } from "../ui/uiDashboard/DashboardManager";
@@ -21,30 +21,18 @@ const DashboardPage = () => {
 
   const renderDashboard = () => {
     switch (role) {
-      case "RESPONSABLE_PERSONNEL":
-        return <DashboardResponsable />;
-      case "MANAGER":
-        return <DashboardManager />;
-      case "SERVEUR":
-        return <DashboardServeur />;
-      case "CUISINIERE":
-        return <DashboardCuisiniere />;
-      case "CAISSIER":
-        return <DashboardCaissier />;
-      default:
-        return (
-          <p className="text-gray-500 dark:text-gray-400">
-            Rôle non reconnu.
-          </p>
-        );
+      case "RESPONSABLE_PERSONNEL": return <DashboardResponsable />;
+      case "MANAGER": return <DashboardManager />;
+      case "SERVEUR": return <DashboardServeur />;
+      case "CUISINIERE": return <DashboardCuisiniere />;
+      case "CAISSIER": return <DashboardCaissier />;
+      default: return <p className="text-gray-500 dark:text-gray-400">Rôle non reconnu.</p>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <Navbar />
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+    <Layout>
+      <div className="max-w-6xl mx-auto">
 
         {/* Salutation */}
         <div className="mb-8">
@@ -61,8 +49,8 @@ const DashboardPage = () => {
 
         {/* Dashboard selon rôle */}
         {renderDashboard()}
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 
