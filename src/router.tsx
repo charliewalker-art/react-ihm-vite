@@ -5,6 +5,7 @@ import TablesPage from "./pages/TablesPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilPage from "./pages/ProfilPage";
+import PlatsPage from "./pages/PlatsPage"; // Import de la nouvelle page
 
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -43,7 +44,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/menu",
-    element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Menu — bientôt</div></ProtectedRoute>,
+    element: <ProtectedRoute><PlatsPage /></ProtectedRoute>, // Remplacement ici
   },
 
   // SERVEUR → directement les tables
@@ -64,11 +65,10 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Caisse — bientôt</div></ProtectedRoute>,
   },
 
-{
-  path: "/profil",
-  element: <ProtectedRoute><ProfilPage /></ProtectedRoute>,
-},
-
+  {
+    path: "/profil",
+    element: <ProtectedRoute><ProfilPage /></ProtectedRoute>,
+  },
 
   { path: "*", element: <NotFound /> },
 ]);
