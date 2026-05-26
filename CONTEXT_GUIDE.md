@@ -32,11 +32,13 @@ src/
 │   ├── axiosInstance.ts                    → Axios partagé avec interceptors
 │   ├── useAuth.ts                          → Auth API / token / user
 │   ├── usePlats.ts                         → Flux CRUD plats
+│   ├── useCommande.ts                      → Flux commandes / annulations
 │   ├── useTable.ts                         → Flux tables / statut / appel
 │   └── useUtilisateur.ts                   → Flux utilisateurs / profil
 ├── pages/
 │   ├── DashboardPage.tsx                   → Page dashboard central
 │   ├── LoginPage.tsx                       → Page de login
+│   ├── CommandesPage.tsx                   → Page commandes / gestion des commandes
 │   ├── PlatsPage.tsx                       → Gestion du menu / plats
 │   ├── ProfilPage.tsx                      → Edition du profil
 │   ├── TablesPage.tsx                      → Gestion plan de salle
@@ -61,6 +63,11 @@ src/
     ├── uiPlats/
     │   ├── PlatCard.tsx
     │   └── PlatFormModal.tsx
+    ├── uiCommandes/
+    │   ├── AnnulationModal.tsx
+    │   ├── CommandeCard.tsx
+    │   ├── CreateCommandeModal.tsx
+    │   └── StatutCommandeBadge.tsx
     ├── uiTables/
     │   ├── CreateTableModal.tsx
     │   ├── StatutTableBadge.tsx

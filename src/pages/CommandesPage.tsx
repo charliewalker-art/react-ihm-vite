@@ -15,7 +15,7 @@ import type { TableResponse } from '../types/table';
 // Filtres disponibles dans la page serveur/manager
 const FILTRES: { label: string; value: StatutCommande | 'TOUTES' }[] = [
   { label: 'Toutes', value: 'TOUTES' },
-  { label: 'Créées', value: 'CREEE' },
+ // { label: 'Créées', value: 'CREEE' },
   { label: 'En attente cuisine', value: 'EN_ATTENTE_CUISINE' },
   { label: 'En préparation', value: 'EN_PREPARATION' },
   { label: 'Prêtes', value: 'PRETE' },
