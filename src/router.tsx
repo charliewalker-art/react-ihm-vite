@@ -5,7 +5,8 @@ import TablesPage from "./pages/TablesPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProfilPage from "./pages/ProfilPage";
-import PlatsPage from "./pages/PlatsPage"; // Import de la nouvelle page
+import PlatsPage from "./pages/PlatsPage";
+import CommandesPage from "./pages/CommandesPage";
 
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -27,39 +28,39 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute><UsersPage /></ProtectedRoute>,
   },
 
-  // MANAGER → son dashboard avec ses cards
+  // MANAGER
   {
     path: "/manager",
     element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
   },
-
-  // Pages accessibles depuis le dashboard MANAGER
   {
     path: "/tables",
     element: <ProtectedRoute><TablesPage /></ProtectedRoute>,
   },
   {
-    path: "/commandes",
-    element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Commandes — bientôt</div></ProtectedRoute>,
-  },
-  {
     path: "/menu",
-    element: <ProtectedRoute><PlatsPage /></ProtectedRoute>, // Remplacement ici
+    element: <ProtectedRoute><PlatsPage /></ProtectedRoute>,
   },
 
-  // SERVEUR → directement les tables
+  // COMMANDES — SERVEUR + MANAGER
+  {
+    path: "/commandes",
+    element: <ProtectedRoute><CommandesPage /></ProtectedRoute>,
+  },
+
+  // SERVEUR
   {
     path: "/serveur",
     element: <ProtectedRoute><TablesPage /></ProtectedRoute>,
   },
 
-  // CUISINIERE
+  // CUISINIERE — placeholder pour l'instant
   {
     path: "/cuisine",
     element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Cuisine — bientôt</div></ProtectedRoute>,
   },
 
-  // CAISSIER
+  // CAISSIER — placeholder pour l'instant
   {
     path: "/caisse",
     element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Caisse — bientôt</div></ProtectedRoute>,
@@ -69,6 +70,5 @@ export const router = createBrowserRouter([
     path: "/profil",
     element: <ProtectedRoute><ProfilPage /></ProtectedRoute>,
   },
-
   { path: "*", element: <NotFound /> },
 ]);
