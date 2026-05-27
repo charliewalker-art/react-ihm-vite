@@ -9,6 +9,7 @@ import PlatsPage from "./pages/PlatsPage";
 import CommandesPage from "./pages/CommandesPage";
 import CuisinePage from "./pages/Cuisinepage";
 import CaissePage from "./pages/CaissePage";
+import CartePage   from "./pages/CartePage";
 
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -67,6 +68,9 @@ export const router = createBrowserRouter([
     path: "/caisse",
     element: <ProtectedRoute><CaissePage /></ProtectedRoute>,
   },
+
+  //
+    { path: "/carte", element: <CartePage /> },
 
   {
     path: "/profil",

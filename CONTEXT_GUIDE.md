@@ -5,7 +5,7 @@
 
 ## 1. Résumé exécutif
 
-IHMFROND est une application frontend React + Vite + TypeScript destinée à la gestion d’un restaurant. Elle utilise React 19, Vite 4, TypeScript, Tailwind CSS via le plugin `@tailwindcss/vite`, `react-router-dom` pour le routage, `axios` pour les appels HTTP, et `lucide-react` pour les icônes. L’application couvre les grands modules UI : Authentification, Dashboard métier, Plats, Tables, Utilisateurs, et Profil. L’architecture est centrée sur des hooks personnalisés (`useAuth`, `usePlats`, `useTable`, `useUtilisateur`) et des composants atomiques / moléculaires, sans store global externe.
+IHMFROND est une application frontend React + Vite + TypeScript destinée à la gestion d’un restaurant. Elle utilise React 19, Vite 4, TypeScript, Tailwind CSS via le plugin `@tailwindcss/vite`, `react-router-dom` pour le routage, `axios` pour les appels HTTP, et `lucide-react` pour les icônes. L’application couvre les grands modules UI : Authentification, Dashboard métier, Plats, Tables, Utilisateurs, Commandes, Caisse, Cuisine, et Profil. L’architecture est centrée sur des hooks personnalisés (`useAuth`, `usePlats`, `useCommande`, `usePaiement`, `useTable`, `useUtilisateur`, `useWebSocket`) et des composants atomiques / moléculaires, sans store global externe.
 
 ---
 
@@ -33,12 +33,16 @@ src/
 │   ├── useAuth.ts                          → Auth API / token / user
 │   ├── usePlats.ts                         → Flux CRUD plats
 │   ├── useCommande.ts                      → Flux commandes / annulations
+│   ├── usePaiement.ts                      → Flux encaissement / statistiques caisse
 │   ├── useTable.ts                         → Flux tables / statut / appel
-│   └── useUtilisateur.ts                   → Flux utilisateurs / profil
+│   ├── useUtilisateur.ts                   → Flux utilisateurs / profil
+│   └── useWebSocket.ts                     → WebSocket STOMP temps réel
 ├── pages/
 │   ├── DashboardPage.tsx                   → Page dashboard central
 │   ├── LoginPage.tsx                       → Page de login
+│   ├── CaissePage.tsx                      → Page caisse / encaissement
 │   ├── CommandesPage.tsx                   → Page commandes / gestion des commandes
+│   ├── Cuisinepage.tsx                     → Page cuisine / préparation des commandes
 │   ├── PlatsPage.tsx                       → Gestion du menu / plats
 │   ├── ProfilPage.tsx                      → Edition du profil
 │   ├── TablesPage.tsx                      → Gestion plan de salle
@@ -112,6 +116,8 @@ src/
 | tailwindcss | ^4.2.2 | Framework CSS utilitaire |
 | @tailwindcss/vite | ^4.2.2 | Plugin Tailwind pour Vite |
 | lucide-react | ^1.16.0 | Bibliothèque d’icônes SVG |
+| @stomp/stompjs | ^7.3.0 | Client STOMP WebSocket |
+| sockjs-client | ^1.6.1 | WebSocket fallback |
 | typescript | ~5.9.3 | Typage statique |
 | vite | ^8.0.1 | Bundler / dev server |
 | @vitejs/plugin-react | ^6.0.1 | Plugin React pour Vite |
@@ -241,6 +247,10 @@ Mais insuffisant sur les modals :
 | `DashboardCaissier` | `src/ui/uiDashboard/DashboardCaissier.tsx` | - | Dashboard rôle | cards statiques |
 | `PlatCard` | `src/ui/uiPlats/PlatCard.tsx` | `plat`, `onEdit`, `onToggle`, `onDelete`, `onPerte` | Carte plat | actions multiples |
 | `PlatFormModal` | `src/ui/uiPlats/PlatFormModal.tsx` | `isOpen`, `onClose`, `onSubmit`, `platToEdit` | Création / édition plat | modal formulaire |
+| `CommandeCard` | `src/ui/uiCommandes/CommandeCard.tsx` | `commande`, `userRole`, `userId`, `onValider`, `onMarquerServie`, `onDemanderAddition`, `onAnnuler` | Carte commande | actions selon rôle et statut |
+| `CreateCommandeModal` | `src/ui/uiCommandes/CreateCommandeModal.tsx` | `onClose`, `onSubmit`, `plats`, `tables`, `serveurId` | Modal création commande | formulaire commande dynamique |
+| `AnnulationModal` | `src/ui/uiCommandes/AnnulationModal.tsx` | `commandeId`, `onClose`, `onConfirm` | Modal annulation | motif d’annulation |
+| `StatutCommandeBadge` | `src/ui/uiCommandes/StatutCommandeBadge.tsx` | `statut` | Badge statut commande | mapping statut → style |
 | `TableCard` | `src/ui/uiTables/TableCard.tsx` | `table`, `onChangerStatut`, `onAcquitter`, `onSupprimer`, `isLoading`, `canDelete` | Carte table | état / actions statut |
 | `StatutTableBadge` | `src/ui/uiTables/StatutTableBadge.tsx` | `statut` | Badge statut table | config-driven |
 | `CreateTableModal` | `src/ui/uiTables/CreateTableModal.tsx` | `onClose`, `onSubmit` | Modal création table | form modal |
@@ -367,6 +377,9 @@ interface DashboardCardProps {
 | Users | `src/pages/UsersPage.tsx` | `/users` | protégée | `useUtilisateur` | gestion du staff |
 | Tables | `src/pages/TablesPage.tsx` | `/tables`, `/serveur` | protégée | `useTable`, `useAuth` | plan de salle |
 | Plats | `src/pages/PlatsPage.tsx` | `/menu` | protégée | `usePlats` | CRUD plats |
+| Commandes | `src/pages/CommandesPage.tsx` | `/commandes` | protégée | `useCommande`, `usePlats`, `useTable`, `useAuth`, `useWebSocket` | gestion des commandes + workflows cuisine / caisse |
+| Cuisine | `src/pages/Cuisinepage.tsx` | `/cuisine` | protégée | `useCommande`, `useWebSocket` | préparation cuisine et transitions statut |
+| Caisse | `src/pages/CaissePage.tsx` | `/caisse` | protégée | `useAuth`, `usePaiement`, `useWebSocket` | encaissement des commandes |
 | Profil | `src/pages/ProfilPage.tsx` | `/profil` | protégée | `useAuth`, `useUtilisateur` | édition profil personnel |
 
 ### Router complet
@@ -380,11 +393,11 @@ Routes principales :
 - `/users` → `ProtectedRoute` → `UsersPage`
 - `/manager` → `ProtectedRoute` → `DashboardPage`
 - `/tables` → `ProtectedRoute` → `TablesPage`
-- `/commandes` → `ProtectedRoute` → placeholder `Commandes — bientôt`
+- `/commandes` → `ProtectedRoute` → `CommandesPage`
 - `/menu` → `ProtectedRoute` → `PlatsPage`
 - `/serveur` → `ProtectedRoute` → `TablesPage`
-- `/cuisine` → `ProtectedRoute` → placeholder `Cuisine — bientôt`
-- `/caisse` → `ProtectedRoute` → placeholder `Caisse — bientôt`
+- `/cuisine` → `ProtectedRoute` → `CuisinePage`
+- `/caisse` → `ProtectedRoute` → `CaissePage`
 - `/profil` → `ProtectedRoute` → `ProfilPage`
 - `*` → `NotFound` page
 
@@ -498,6 +511,90 @@ export const useUtilisateur = () => {
   - l’en-tête Authorization est ajouté manuellement via `getHeaders()`
   - ne réutilise pas `axiosInstance`
   - `API_URL` est basé sur `import.meta.env.VITE_API_URL`
+
+### `useCommande` — `src/hooks/useCommande.ts`
+
+- Signature
+```ts
+export const useCommande = () => {
+  commandes: CommandeResponse[];
+  loading: boolean;
+  error: string | null;
+  fetchCommandes: (statut?: StatutCommande) => Promise<void>;
+  getCommande: (id: number) => Promise<CommandeResponse>;
+  creerCommande: (data: CommandeRequest) => Promise<CommandeResponse>;
+  validerCommande: (id: number) => Promise<CommandeResponse>;
+  commencerPreparation: (id: number) => Promise<CommandeResponse>;
+  marquerPrete: (id: number) => Promise<CommandeResponse>;
+  marquerServie: (id: number) => Promise<CommandeResponse>;
+  demanderAddition: (id: number) => Promise<CommandeResponse>;
+  annulerCommande: (id: number, annuleParId: number, data: AnnulationRequest) => Promise<CommandeResponse>;
+  evaluerCommande: (id: number, data: EvaluationRequest) => Promise<CommandeResponse>;
+  getCommandesEnRetard: (seuilMinutes?: number) => Promise<CommandeResponse[]>;
+  getJournalAnnulations: () => Promise<CommandeResponse[]>;
+}
+```
+- Endpoints API
+  - `GET /api/commandes`
+  - `GET /api/commandes/:id`
+  - `POST /api/commandes`
+  - `PATCH /api/commandes/:id/valider`
+  - `PATCH /api/commandes/:id/commencer`
+  - `PATCH /api/commandes/:id/prete`
+  - `PATCH /api/commandes/:id/servie`
+  - `PATCH /api/commandes/:id/addition`
+  - `PATCH /api/commandes/:id/annuler`
+  - `PATCH /api/commandes/:id/evaluer`
+  - `GET /api/commandes/retard`
+  - `GET /api/commandes/annulations`
+- États exposés
+  - `commandes`
+  - `loading`
+  - `error`
+- Effets notables
+  - `fetchCommandes` est mémorisé avec `useCallback`
+  - permet la création, la validation, la préparation, la mise en attente paiement et l’annulation
+  - supporte les actions métier cuisine et caisse
+
+### `usePaiement` — `src/hooks/usePaiement.ts`
+
+- Signature
+```ts
+export const usePaiement = () => {
+  loading: boolean;
+  error: string | null;
+  encaisser: (data: PaiementRequest) => Promise<PaiementResponse>;
+  getPaiementParCommande: (commandeId: number) => Promise<PaiementResponse>;
+  getPaiementsDuJour: () => Promise<PaiementResponse[]>;
+  getStatsDuJour: () => Promise<{ totalEncaisse: number; totalPourboires: number }>;
+}
+```
+- Endpoints API
+  - `POST /api/paiements`
+  - `GET /api/paiements/commande/:commandeId`
+  - `GET /api/paiements/aujourdhui`
+  - `GET /api/paiements/stats`
+- États exposés
+  - `loading`
+  - `error`
+- Effets notables
+  - encaissement de commande avec choix du mode de paiement et pourboire
+  - expose des statistiques de caisse pour le jour
+
+### `useWebSocket` — `src/hooks/useWebSocket.ts`
+
+- Signature
+```ts
+export const useWebSocket = (onMessage: () => void) => void;
+```
+- Flux temps réel
+  - se connecte sur `http://localhost:8080/ws`
+  - utilise `SockJS` pour le fallback
+  - s’abonne à `/topic/commandes`
+  - exécute la callback `onMessage` à chaque message reçu
+- Effets notables
+  - auto-reconnexion avec `reconnectDelay: 5000`
+  - encapsule la logique WebSocket / STOMP hors des pages métier
 
 ### `axiosInstance` — `src/hooks/axiosInstance.ts`
 
