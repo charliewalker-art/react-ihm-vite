@@ -5,17 +5,15 @@ import { useCommande } from '../hooks/useCommande';
 import { usePlats } from '../hooks/usePlats';
 import { useTable } from '../hooks/useTable';
 import { useAuth } from '../hooks/useAuth';
+import { useWebSocket } from '../hooks/useWebSocket';
 import { CommandeCard } from '../ui/uiCommandes/CommandeCard';
 import { CreateCommandeModal } from '../ui/uiCommandes/CreateCommandeModal';
 import { AnnulationModal } from '../ui/uiCommandes/AnnulationModal';
 import type { StatutCommande, CommandeRequest } from '../types/commande';
 import type { TableResponse } from '../types/table';
 
-
-// Filtres disponibles dans la page serveur/manager
 const FILTRES: { label: string; value: StatutCommande | 'TOUTES' }[] = [
   { label: 'Toutes', value: 'TOUTES' },
- // { label: 'Créées', value: 'CREEE' },
   { label: 'En attente cuisine', value: 'EN_ATTENTE_CUISINE' },
   { label: 'En préparation', value: 'EN_PREPARATION' },
   { label: 'Prêtes', value: 'PRETE' },
@@ -53,11 +51,8 @@ export default function CommandesPage() {
     listerTables().then(setTables).catch(() => {});
   }, [charger]);
 
-  // Auto-refresh toutes les 30 secondes
-  useEffect(() => {
-    const interval = setInterval(charger, 30000);
-    return () => clearInterval(interval);
-  }, [charger]);
+  // ← WebSocket remplace le setInterval
+  useWebSocket(charger);
 
   const handleCreer = async (data: CommandeRequest) => {
     await creerCommande(data);
@@ -84,7 +79,6 @@ export default function CommandesPage() {
     charger();
   };
 
-  // Trier : plus récentes en premier pour les statuts actifs
   const commandesTriees = [...commandes].sort(
     (a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime()
   );
@@ -148,7 +142,7 @@ export default function CommandesPage() {
           ))}
         </div>
 
-        {/* États de chargement / erreur / vide */}
+        {/* États */}
         {loading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={32} className="animate-spin text-amber-500" />
@@ -168,7 +162,7 @@ export default function CommandesPage() {
           </div>
         )}
 
-        {/* Grille des commandes */}
+        {/* Grille */}
         {!loading && !error && commandesTriees.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {commandesTriees.map((commande) => (
@@ -186,7 +180,7 @@ export default function CommandesPage() {
           </div>
         )}
 
-        {/* Modal création */}
+        {/* Modals */}
         {showCreateModal && (
           <CreateCommandeModal
             onClose={() => setShowCreateModal(false)}
@@ -197,7 +191,6 @@ export default function CommandesPage() {
           />
         )}
 
-        {/* Modal annulation */}
         {annulationCommandeId !== null && (
           <AnnulationModal
             commandeId={annulationCommandeId}

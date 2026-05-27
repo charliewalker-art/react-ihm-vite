@@ -8,6 +8,7 @@ import ProfilPage from "./pages/ProfilPage";
 import PlatsPage from "./pages/PlatsPage";
 import CommandesPage from "./pages/CommandesPage";
 import CuisinePage from "./pages/Cuisinepage";
+import CaissePage from "./pages/CaissePage";
 
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
   // CAISSIER — placeholder pour l'instant
   {
     path: "/caisse",
-    element: <ProtectedRoute><div className="min-h-screen flex items-center justify-center text-amber-500 text-2xl font-bold">Caisse — bientôt</div></ProtectedRoute>,
+    element: <ProtectedRoute><CaissePage /></ProtectedRoute>,
   },
 
   {

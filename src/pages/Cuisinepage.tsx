@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { ChefHat, RefreshCw, Loader2, Clock, AlertTriangle, Flame, CheckCircle2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useCommande } from '../hooks/useCommande';
+import { useWebSocket } from '../hooks/useWebSocket';
 import type { CommandeResponse } from '../types/commande';
 
-// ─── Badge statut ───────────────────────────────────────────────────────────
+// ─── Badge statut ─────────────────────────────────────────────────────────────
 
 const StatutBadge = ({ statut }: { statut: string }) => {
   const config: Record<string, { label: string; className: string }> = {
@@ -25,7 +26,7 @@ const StatutBadge = ({ statut }: { statut: string }) => {
   );
 };
 
-// ─── Minuterie depuis la création ────────────────────────────────────────────
+// ─── Minuterie ────────────────────────────────────────────────────────────────
 
 const Minuterie = ({ dateCreation }: { dateCreation: string }) => {
   const [minutes, setMinutes] = useState(0);
@@ -51,7 +52,7 @@ const Minuterie = ({ dateCreation }: { dateCreation: string }) => {
   );
 };
 
-// ─── Carte commande cuisine ──────────────────────────────────────────────────
+// ─── Carte commande cuisine ───────────────────────────────────────────────────
 
 const CarteCommande = ({
   commande,
@@ -69,18 +70,15 @@ const CarteCommande = ({
   const isEnPrep = commande.statut === 'EN_PREPARATION';
 
   return (
-    <div className={`rounded-2xl border bg-white dark:bg-gray-900 flex flex-col gap-0 overflow-hidden shadow-sm transition-all
+    <div className={`rounded-2xl border bg-white dark:bg-gray-900 flex flex-col overflow-hidden shadow-sm transition-all
       ${isEnPrep
         ? 'border-orange-300 dark:border-orange-700 shadow-orange-100 dark:shadow-orange-900/20'
         : 'border-gray-200 dark:border-gray-700'
       }`}
     >
-      {/* Header carte */}
+      {/* Header */}
       <div className={`px-4 py-3 flex items-center justify-between
-        ${isEnPrep
-          ? 'bg-orange-50 dark:bg-orange-900/20'
-          : 'bg-amber-50 dark:bg-amber-900/10'
-        }`}
+        ${isEnPrep ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-amber-50 dark:bg-amber-900/10'}`}
       >
         <div className="flex items-center gap-2">
           {isEnPrep
@@ -89,7 +87,7 @@ const CarteCommande = ({
           }
           <span className="font-bold text-gray-800 dark:text-white text-sm">
             {commande.tableNumero
-             ? `Table ${commande.tableNumero}`
+              ? `Table ${commande.tableNumero}`
               : commande.nomClientRetrait
                 ? `À emporter — ${commande.nomClientRetrait}`
                 : `Commande #${commande.id}`
@@ -107,7 +105,7 @@ const CarteCommande = ({
         {commande.details && commande.details.length > 0 ? (
           commande.details.map((detail, i) => (
             <div key={i} className="flex items-start gap-2">
-              <span className="mt-0.5 min-w-[24px] h-6 flex items-center justify-center
+              <span className="mt-0.5 min-w-6 h-6 flex items-center justify-center
                 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-bold text-gray-600 dark:text-gray-300">
                 {detail.quantite}×
               </span>
@@ -139,14 +137,10 @@ const CarteCommande = ({
               transition-all shadow-sm shadow-amber-200 dark:shadow-amber-900/30
               disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isLoading
-              ? <Loader2 size={15} className="animate-spin" />
-              : <Flame size={15} />
-            }
+            {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Flame size={15} />}
             Commencer la préparation
           </button>
         )}
-
         {isEnPrep && (
           <button
             onClick={() => onTerminer(commande.id)}
@@ -156,10 +150,7 @@ const CarteCommande = ({
               transition-all shadow-sm shadow-green-200 dark:shadow-green-900/30
               disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isLoading
-              ? <Loader2 size={15} className="animate-spin" />
-              : <CheckCircle2 size={15} />
-            }
+            {isLoading ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
             Marquer comme prête
           </button>
         )}
@@ -168,7 +159,7 @@ const CarteCommande = ({
   );
 };
 
-// ─── Page principale ─────────────────────────────────────────────────────────
+// ─── Page principale ──────────────────────────────────────────────────────────
 
 export default function CuisinePage() {
   const { commencerPreparation, marquerPrete } = useCommande();
@@ -179,7 +170,6 @@ export default function CuisinePage() {
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // On importe axiosInstance directement pour éviter le state partagé du hook
   const charger = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -202,11 +192,8 @@ export default function CuisinePage() {
     charger();
   }, [charger]);
 
-  // Auto-refresh toutes les 20 secondes
-  useEffect(() => {
-    const interval = setInterval(charger, 20000);
-    return () => clearInterval(interval);
-  }, [charger]);
+  // ← WebSocket remplace le setInterval
+  useWebSocket(charger);
 
   const handleCommencer = async (id: number) => {
     setLoadingId(id);
@@ -290,11 +277,11 @@ export default function CuisinePage() {
           </div>
         )}
 
-        {/* Deux colonnes : En attente | En préparation */}
+        {/* Deux colonnes */}
         {totalCommandes > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            {/* Colonne En attente */}
+            {/* En attente */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
@@ -306,7 +293,6 @@ export default function CuisinePage() {
                   {enAttente.length}
                 </span>
               </div>
-
               <div className="flex flex-col gap-3">
                 {enAttente.length === 0 ? (
                   <div className="text-center py-10 text-gray-400 dark:text-gray-600 text-sm
@@ -327,7 +313,7 @@ export default function CuisinePage() {
               </div>
             </div>
 
-            {/* Colonne En préparation */}
+            {/* En préparation */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
@@ -339,7 +325,6 @@ export default function CuisinePage() {
                   {enPreparation.length}
                 </span>
               </div>
-
               <div className="flex flex-col gap-3">
                 {enPreparation.length === 0 ? (
                   <div className="text-center py-10 text-gray-400 dark:text-gray-600 text-sm
