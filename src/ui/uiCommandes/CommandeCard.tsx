@@ -11,7 +11,7 @@ import {
   ShoppingBag,
   AlertTriangle,
 } from 'lucide-react';
-import type { CommandeResponse, StatutCommande } from '../../types/commande';
+import type { CommandeResponse } from '../../types/commande';
 import { StatutCommandeBadge } from './StatutCommandeBadge';
 
 interface CommandeCardProps {
@@ -27,7 +27,7 @@ interface CommandeCardProps {
 export const CommandeCard = ({
   commande,
   userRole,
-  userId,
+
   onValider,
   onMarquerServie,
   onDemanderAddition,
@@ -131,7 +131,7 @@ export const CommandeCard = ({
         {commande.details.map((d) => (
           <div key={d.id} className="flex items-start justify-between gap-2 text-sm">
             <div className="flex items-start gap-2">
-              <span className="mt-0.5 min-w-[20px] text-center bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded px-1">
+              <span className="mt-0.5 min-w-5 text-center bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded px-1">
                 {d.quantite}×
               </span>
               <div>

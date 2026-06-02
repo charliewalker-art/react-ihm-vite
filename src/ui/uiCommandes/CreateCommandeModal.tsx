@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Plus, Minus, ShoppingBag, MapPin, Loader2 } from 'lucide-react';
 import type  { CommandeRequest, DetailCommandeRequest, TypeCommande } from '../../types/commande';
 import type { Plat } from '../../types/plat';

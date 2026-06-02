@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Wallet, Loader2, RefreshCw, CreditCard, Banknote, Smartphone, CheckCircle2, X } from 'lucide-react';
 import Layout from '../components/Layout';
-import { useCommande } from '../hooks/useCommande';
+//import { useCommande } from '../hooks/useCommande';
 import { usePaiement } from '../hooks/usePaiement';
 import { useAuth } from '../hooks/useAuth';
 import { useWebSocket } from '../hooks/useWebSocket';
