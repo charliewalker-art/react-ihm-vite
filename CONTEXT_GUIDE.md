@@ -1044,6 +1044,7 @@ VITE_API_BASE_URL=http://localhost:8080
 | Config TS | `tsconfig.app.json` | Options strictes du projet |
 | ESLint | `eslint.config.js` | Règles linting, plugins React |
 
+
 ---
 
 ### Observations globales
