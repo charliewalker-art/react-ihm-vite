@@ -25,6 +25,7 @@ export default function CartePage() {
   const { plats, commandes, loading, fetchMenu, fetchCommandesTable, passerCommande, appellerServeur } =
     useCartePublique();
 
+  const [darkMode, setDarkMode] = useState(false);
   const [onglet, setOnglet] = useState<Onglet>('menu');
   const [categorieActive, setCategorieActive] = useState<Categorie>('PLAT');
   const [panier, setPanier] = useState<LignePanier[]>([]);
@@ -62,6 +63,7 @@ export default function CartePage() {
       reconnectDelay: 5000,
       onConnect: () => {
         client.subscribe('/topic/commandes', () => chargerCommandes());
+        client.subscribe('/topic/plats', () => fetchMenu()); // ← mise à jour menu en temps réel
       },
     });
     client.activate();
@@ -122,23 +124,97 @@ export default function CartePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    // La classe "dark" sur ce div active le mode sombre pour tous les enfants
+    <div className={darkMode ? 'dark' : ''}>
+      <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex flex-col transition-colors duration-300">
 
-      {/* Header mobile */}
-      <div className="md:hidden">
-        <CarteHeader
-          numeroTable={numeroTable}
-          nbArticles={nbArticles}
-          appelEnvoye={appelEnvoye}
-          onAppelerServeur={handleAppelerServeur}
-          onOnglet={setOnglet}
-        />
-      </div>
+        {/* Header mobile */}
+        <div className="md:hidden">
+          <CarteHeader
+            numeroTable={numeroTable}
+            nbArticles={nbArticles}
+            appelEnvoye={appelEnvoye}
+            darkMode={darkMode}
+            onToggleDark={() => setDarkMode((d) => !d)}
+            onAppelerServeur={handleAppelerServeur}
+            onOnglet={setOnglet}
+          />
+        </div>
 
-      <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
 
-        {/* Sidebar desktop */}
-        <CarteSideNav
+          {/* Sidebar desktop */}
+          <CarteSideNav
+            onglet={onglet}
+            nbArticles={nbArticles}
+            appelEnvoye={appelEnvoye}
+            darkMode={darkMode}
+            onToggleDark={() => setDarkMode((d) => !d)}
+            onOnglet={setOnglet}
+            onAppelerServeur={handleAppelerServeur}
+          />
+
+          {/* Contenu */}
+          <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
+
+            {/* Header desktop */}
+            <div className="hidden md:flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-widest">Table {numeroTable}</p>
+                <h1 className="font-bold text-gray-900 dark:text-white text-xl">Notre Menu</h1>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="px-4 md:px-6 flex flex-col gap-2 mt-3">
+              {succesCommande && (
+                <div className="bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-700 rounded-2xl px-4 py-3
+                  text-green-700 dark:text-green-400 text-sm font-semibold flex items-center gap-2">
+                  <CheckCircle2 size={16} />
+                  Commande envoyée en cuisine !
+                </div>
+              )}
+              {appelEnvoye && (
+                <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 rounded-2xl px-4 py-3
+                  text-amber-700 dark:text-amber-400 text-sm font-semibold flex items-center gap-2">
+                  <Bell size={16} />
+                  Le serveur arrive !
+                </div>
+              )}
+            </div>
+
+            {onglet === 'menu' && (
+              <CarteMenu
+                plats={plats}
+                panier={panier}
+                categorieActive={categorieActive}
+                onCategorie={setCategorieActive}
+                onAjouter={ajouterAuPanier}
+                onDiminuer={diminuerQuantite}
+              />
+            )}
+
+            {onglet === 'panier' && (
+              <CartePanier
+                panier={panier}
+                totalPanier={totalPanier}
+                commandeEnCours={commandeEnCours}
+                onAjouter={ajouterAuPanier}
+                onDiminuer={diminuerQuantite}
+                onSupprimer={supprimerDuPanier}
+                onNoteModal={(plat, note) => setNoteModal({ plat, note })}
+                onCommander={handleCommander}
+              />
+            )}
+
+            {onglet === 'commandes' && (
+              <CarteCommandes commandes={commandes} loading={loading} />
+            )}
+          </div>
+        </div>
+
+        {/* Navigation bas mobile */}
+        <CarteBottomNav
           onglet={onglet}
           nbArticles={nbArticles}
           appelEnvoye={appelEnvoye}
@@ -146,87 +222,20 @@ export default function CartePage() {
           onAppelerServeur={handleAppelerServeur}
         />
 
-        {/* Contenu */}
-        <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
-
-          {/* Header desktop */}
-          <div className="hidden md:flex items-center justify-between px-6 py-4 border-b border-gray-800">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-widest">Table {numeroTable}</p>
-              <h1 className="font-bold text-white text-xl">Notre Menu</h1>
-            </div>
-          </div>
-
-          {/* Notifications */}
-          <div className="px-4 md:px-6 flex flex-col gap-2 mt-3">
-            {succesCommande && (
-              <div className="bg-green-900/40 border border-green-700 rounded-2xl px-4 py-3
-                text-green-400 text-sm font-semibold flex items-center gap-2">
-                <CheckCircle2 size={16} />
-                Commande envoyée en cuisine !
-              </div>
-            )}
-            {appelEnvoye && (
-              <div className="bg-amber-900/40 border border-amber-700 rounded-2xl px-4 py-3
-                text-amber-400 text-sm font-semibold flex items-center gap-2">
-                <Bell size={16} />
-                Le serveur arrive !
-              </div>
-            )}
-          </div>
-
-          {onglet === 'menu' && (
-            <CarteMenu
-              plats={plats}
-              panier={panier}
-              categorieActive={categorieActive}
-              onCategorie={setCategorieActive}
-              onAjouter={ajouterAuPanier}
-              onDiminuer={diminuerQuantite}
-            />
-          )}
-
-          {onglet === 'panier' && (
-            <CartePanier
-              panier={panier}
-              totalPanier={totalPanier}
-              commandeEnCours={commandeEnCours}
-              onAjouter={ajouterAuPanier}
-              onDiminuer={diminuerQuantite}
-              onSupprimer={supprimerDuPanier}
-              onNoteModal={(plat, note) => setNoteModal({ plat, note })}
-              onCommander={handleCommander}
-            />
-          )}
-
-          {onglet === 'commandes' && (
-            <CarteCommandes commandes={commandes} loading={loading} />
-          )}
-        </div>
+        {/* Modal note */}
+        {noteModal && (
+          <CarteNoteModal
+            plat={noteModal.plat}
+            note={noteModal.note}
+            onNote={(note) => setNoteModal({ ...noteModal, note })}
+            onConfirmer={() => {
+              mettreAJourNote(noteModal.plat.id, noteModal.note);
+              setNoteModal(null);
+            }}
+            onFermer={() => setNoteModal(null)}
+          />
+        )}
       </div>
-
-      {/* Navigation bas mobile */}
-      <CarteBottomNav
-        onglet={onglet}
-        nbArticles={nbArticles}
-        appelEnvoye={appelEnvoye}
-        onOnglet={setOnglet}
-        onAppelerServeur={handleAppelerServeur}
-      />
-
-      {/* Modal note */}
-      {noteModal && (
-        <CarteNoteModal
-          plat={noteModal.plat}
-          note={noteModal.note}
-          onNote={(note) => setNoteModal({ ...noteModal, note })}
-          onConfirmer={() => {
-            mettreAJourNote(noteModal.plat.id, noteModal.note);
-            setNoteModal(null);
-          }}
-          onFermer={() => setNoteModal(null)}
-        />
-      )}
     </div>
   );
 }

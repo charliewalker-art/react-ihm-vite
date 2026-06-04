@@ -1,4 +1,4 @@
-import { UtensilsCrossed, ShoppingCart, ClipboardList, Bell } from 'lucide-react';
+import { UtensilsCrossed, ShoppingCart, ClipboardList, Bell, Sun, Moon } from 'lucide-react';
 import type { Onglet } from './types';
 
 interface CarteBottomNavProps {
@@ -9,23 +9,30 @@ interface CarteBottomNavProps {
   onAppelerServeur: () => void;
 }
 
+interface CarteSideNavProps extends CarteBottomNavProps {
+  darkMode: boolean;
+  onToggleDark: () => void;
+}
+
+// ── Navigation bas mobile (inchangée, pas de toggle ici car CarteHeader le porte) ──
 export const CarteBottomNav = ({
   onglet, nbArticles, appelEnvoye, onOnglet, onAppelerServeur
 }: CarteBottomNavProps) => (
-  <div className="fixed bottom-0 left-0 right-0 z-10 bg-gray-900 border-t border-gray-800
-    flex md:hidden">
+  <div className="fixed bottom-0 left-0 right-0 z-10 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex md:hidden">
+
     <button
       onClick={() => onOnglet('menu')}
       className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-semibold transition-all
-        ${onglet === 'menu' ? 'text-amber-400' : 'text-gray-500'}`}
+        ${onglet === 'menu' ? 'text-amber-500' : 'text-gray-400 dark:text-gray-500'}`}
     >
       <UtensilsCrossed size={20} />
       Menu
     </button>
+
     <button
       onClick={() => onOnglet('panier')}
       className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-semibold transition-all relative
-        ${onglet === 'panier' ? 'text-amber-400' : 'text-gray-500'}`}
+        ${onglet === 'panier' ? 'text-amber-500' : 'text-gray-400 dark:text-gray-500'}`}
     >
       <ShoppingCart size={20} />
       Panier
@@ -36,18 +43,20 @@ export const CarteBottomNav = ({
         </span>
       )}
     </button>
+
     <button
       onClick={() => onOnglet('commandes')}
       className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-semibold transition-all
-        ${onglet === 'commandes' ? 'text-amber-400' : 'text-gray-500'}`}
+        ${onglet === 'commandes' ? 'text-amber-500' : 'text-gray-400 dark:text-gray-500'}`}
     >
       <ClipboardList size={20} />
       Commandes
     </button>
+
     <button
       onClick={onAppelerServeur}
       className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-semibold transition-all
-        ${appelEnvoye ? 'text-green-400' : 'text-gray-500'}`}
+        ${appelEnvoye ? 'text-green-500' : 'text-gray-400 dark:text-gray-500'}`}
     >
       <Bell size={20} />
       Serveur
@@ -55,11 +64,12 @@ export const CarteBottomNav = ({
   </div>
 );
 
-// Sidebar pour desktop/tablette
+// ── Sidebar desktop avec bouton toggle ──
 export const CarteSideNav = ({
-  onglet, nbArticles, appelEnvoye, onOnglet, onAppelerServeur
-}: CarteBottomNavProps) => (
-  <div className="hidden md:flex flex-col w-56 bg-gray-900 border-r border-gray-800 sticky top-0 h-screen p-3 gap-1">
+  onglet, nbArticles, appelEnvoye, darkMode, onToggleDark, onOnglet, onAppelerServeur
+}: CarteSideNavProps) => (
+  <div className="hidden md:flex flex-col w-56 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 sticky top-0 h-screen p-3 gap-1">
+
     {[
       { value: 'menu' as Onglet, label: 'Menu', Icon: UtensilsCrossed },
       { value: 'panier' as Onglet, label: `Panier${nbArticles > 0 ? ` (${nbArticles})` : ''}`, Icon: ShoppingCart },
@@ -71,20 +81,36 @@ export const CarteSideNav = ({
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
           ${onglet === value
             ? 'bg-amber-500 text-white'
-            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
           }`}
       >
         <Icon size={18} />
         {label}
       </button>
     ))}
+
+    {/* Appeler serveur */}
     <button
       onClick={onAppelerServeur}
       className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mt-auto
-        ${appelEnvoye ? 'bg-green-500 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
+        ${appelEnvoye
+          ? 'bg-green-500 text-white'
+          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+        }`}
     >
       <Bell size={18} />
       Appeler le serveur
     </button>
+
+    {/* Toggle dark/light */}
+    <button
+      onClick={onToggleDark}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+        text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+    >
+      {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+      {darkMode ? 'Mode clair' : 'Mode sombre'}
+    </button>
+
   </div>
 );

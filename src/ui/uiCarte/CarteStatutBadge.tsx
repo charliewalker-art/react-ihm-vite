@@ -29,7 +29,11 @@ const config: Record<string, { label: string; icon: React.ReactNode; className: 
 };
 
 export const CarteStatutBadge = ({ statut }: { statut: string }) => {
-  const c = config[statut] ?? { label: statut, icon: null, className: 'bg-gray-100 text-gray-600 border-gray-200' };
+  const c = config[statut] ?? {
+    label: statut,
+    icon: null,
+    className: 'bg-gray-100 text-gray-600 border-gray-200',
+  };
   return (
     <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${c.className}`}>
       {c.icon}{c.label}
