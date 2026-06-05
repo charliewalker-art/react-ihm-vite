@@ -3,7 +3,7 @@ import axios from 'axios';
 import type { Plat } from '../types/plat';
 import type { CommandeRequest, CommandeResponse } from '../types/commande';
 
-const API = import.meta.env.VITE_API_BASE_URL ;
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export const useCartePublique = () => {
   const [plats, setPlats] = useState<Plat[]>([]);
@@ -11,28 +11,24 @@ export const useCartePublique = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ── Charger le menu public (sans token) ──
   const fetchMenu = useCallback(async () => {
     try {
       const res = await axios.get<Plat[]>(`${API}/api/plats/menu`);
-      setPlats(res.data);
+      setPlats(Array.isArray(res.data) ? res.data : []);
     } catch {
       setError('Impossible de charger le menu.');
     }
   }, []);
 
-  // ── Charger les commandes de la table ──
   const fetchCommandesTable = useCallback(async (tableId: number) => {
     setLoading(true);
     try {
-      // On récupère toutes les commandes actives liées à cette table
       const statuts = ['EN_ATTENTE_CUISINE', 'EN_PREPARATION', 'PRETE', 'SERVIE', 'EN_ATTENTE_PAIEMENT'];
       const resultats = await Promise.all(
         statuts.map((s) => axios.get<CommandeResponse[]>(`${API}/api/commandes?statut=${s}`))
       );
       const toutes = resultats.flatMap((r) => r.data);
       const deTable = toutes.filter((c) => c.tableId === tableId);
-      // Trier par date décroissante
       deTable.sort((a, b) => new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime());
       setCommandes(deTable);
     } catch {
@@ -42,13 +38,22 @@ export const useCartePublique = () => {
     }
   }, []);
 
-  // ── Passer une commande ──
+  // ── Récupérer l'id d'une table par son numéro ──
+  const fetchTableByNumero = useCallback(async (numeroTable: number): Promise<number | null> => {
+    try {
+      const res = await axios.get<{ numeroTable: number; id: number }[]>(`${API}/api/tables`);
+      const table = res.data.find((t) => t.numeroTable === numeroTable);
+      return table ? table.id : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const passerCommande = async (data: CommandeRequest): Promise<CommandeResponse> => {
     const res = await axios.post<CommandeResponse>(`${API}/api/commandes`, data);
     return res.data;
   };
 
-  // ── Appeler le serveur ──
   const appellerServeur = async (numeroTable: number): Promise<void> => {
     await axios.patch(`${API}/api/tables/appel/${numeroTable}`);
   };
@@ -60,6 +65,7 @@ export const useCartePublique = () => {
     error,
     fetchMenu,
     fetchCommandesTable,
+    fetchTableByNumero,
     passerCommande,
     appellerServeur,
   };

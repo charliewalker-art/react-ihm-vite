@@ -22,7 +22,8 @@ export default function CartePage() {
   const [searchParams] = useSearchParams();
   const numeroTable = parseInt(searchParams.get('table') ?? '1');
 
-  const { plats, commandes, loading, fetchMenu, fetchCommandesTable, passerCommande, appellerServeur } =
+  // fetchTableByNumero ajouté ici
+  const { plats, commandes, loading, fetchMenu, fetchCommandesTable, fetchTableByNumero, passerCommande, appellerServeur } =
     useCartePublique();
 
   const [darkMode, setDarkMode] = useState(false);
@@ -38,16 +39,12 @@ export default function CartePage() {
   useEffect(() => {
     const init = async () => {
       await fetchMenu();
-      try {
-        const axios = (await import('axios')).default;
-        const API = import.meta.env.VITE_API_BASE_URL;
-        const res = await axios.get(`${API}/api/tables`);
-        const table = res.data.find((t: { numeroTable: number; id: number }) => t.numeroTable === numeroTable);
-        if (table) {
-          setTableId(table.id);
-          fetchCommandesTable(table.id);
-        }
-      } catch { /* silencieux */ }
+      //  Appel API déplacé dans le hook
+      const id = await fetchTableByNumero(numeroTable);
+      if (id) {
+        setTableId(id);
+        fetchCommandesTable(id);
+      }
     };
     init();
   }, [numeroTable]);
@@ -63,7 +60,7 @@ export default function CartePage() {
       reconnectDelay: 5000,
       onConnect: () => {
         client.subscribe('/topic/commandes', () => chargerCommandes());
-        client.subscribe('/topic/plats', () => fetchMenu()); // ← mise à jour menu en temps réel
+        client.subscribe('/topic/plats', () => fetchMenu());
       },
     });
     client.activate();
@@ -124,11 +121,9 @@ export default function CartePage() {
   };
 
   return (
-    // La classe "dark" sur ce div active le mode sombre pour tous les enfants
     <div className={darkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex flex-col transition-colors duration-300">
 
-        {/* Header mobile */}
         <div className="md:hidden">
           <CarteHeader
             numeroTable={numeroTable}
@@ -143,7 +138,6 @@ export default function CartePage() {
 
         <div className="flex flex-1 overflow-hidden">
 
-          {/* Sidebar desktop */}
           <CarteSideNav
             onglet={onglet}
             nbArticles={nbArticles}
@@ -154,10 +148,8 @@ export default function CartePage() {
             onAppelerServeur={handleAppelerServeur}
           />
 
-          {/* Contenu */}
           <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
 
-            {/* Header desktop */}
             <div className="hidden md:flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-widest">Table {numeroTable}</p>
@@ -165,7 +157,6 @@ export default function CartePage() {
               </div>
             </div>
 
-            {/* Notifications */}
             <div className="px-4 md:px-6 flex flex-col gap-2 mt-3">
               {succesCommande && (
                 <div className="bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-700 rounded-2xl px-4 py-3
@@ -213,7 +204,6 @@ export default function CartePage() {
           </div>
         </div>
 
-        {/* Navigation bas mobile */}
         <CarteBottomNav
           onglet={onglet}
           nbArticles={nbArticles}
@@ -222,7 +212,6 @@ export default function CartePage() {
           onAppelerServeur={handleAppelerServeur}
         />
 
-        {/* Modal note */}
         {noteModal && (
           <CarteNoteModal
             plat={noteModal.plat}
