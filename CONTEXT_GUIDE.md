@@ -1,5 +1,5 @@
 # IHMFROND — Rapport d'Architecture et Fonctionnel Frontend
-> Dernière mise à jour : 26 mai 2026
+> Dernière mise à jour : 4 juin 2026
 
 ---
 
@@ -748,6 +748,101 @@ export interface UpdateProfilRequest {
 ```
 
 - utilisé pour modification `ProfilPage`
+
+### Domaine Commande
+
+#### `src/types/commande.ts`
+```ts
+export type TypeCommande = 'SUR_PLACE_QR' | 'SUR_PLACE_SERVEUR' | 'A_EMPORTER';
+export type StatutCommande = 'CREEE' | 'EN_ATTENTE_CUISINE' | 'EN_PREPARATION' | 'PRETE' | 'SERVIE' | 'EN_ATTENTE_PAIEMENT' | 'PAYEE' | 'ANNULEE';
+export type ServicePeriode = 'MIDI' | 'SOIR';
+export type ModePaiement = 'ESPECES' | 'CARTE' | 'MOBILE_MONEY';
+
+// Détails plat commande
+export interface DetailCommandeRequest {
+  platId: number;
+  quantite: number;
+  noteClient?: string;
+}
+
+export interface DetailCommandeResponse {
+  id: number;
+  platId: number;
+  platNom: string;
+  platPrix: number;
+  quantite: number;
+  noteClient?: string;
+  sousTotal: number;
+}
+
+// Commande globale
+export interface CommandeRequest {
+  typeCommande: TypeCommande;
+  tableId?: number;
+  serveurId?: number;
+  nomClientRetrait?: string;
+  tempsAttenteEstime?: number;
+  details: DetailCommandeRequest[];
+}
+
+export interface CommandeResponse {
+  id: number;
+  typeCommande: TypeCommande;
+  statut: StatutCommande;
+  servicePeriode: ServicePeriode;
+  tableId?: number;
+  tableNumero?: number;
+  serveurId?: number;
+  serveurNom?: string;
+  nomClientRetrait?: string;
+  dateCreation: string;
+  tempsAttenteEstime?: number;
+  details: DetailCommandeResponse[];
+  montantTotal: number;
+  annuleParNom?: string;
+  motifAnnulation?: string;
+  dateAnnulation?: string;
+  noteSatisfaction?: number;
+  commentaireClient?: string;
+}
+
+// Annulation et évaluation
+export interface AnnulationRequest {
+  motifAnnulation: string;
+}
+
+export interface EvaluationRequest {
+  noteSatisfaction: number; // 1 à 5
+  commentaireClient?: string;
+}
+
+// Paiement
+export interface PaiementRequest {
+  commandeId: number;
+  caissierId: number;
+  montantTotal: number;
+  pourboire?: number;
+  modePaiement: ModePaiement;
+}
+
+export interface PaiementResponse {
+  id: number;
+  commandeId: number;
+  caissierNomComplet: string;
+  montantTotal: number;
+  pourboire: number;
+  modePaiement: ModePaiement;
+  datePaiement: string;
+}
+```
+
+- `TypeCommande` : mode de passation QR client, serveur, ou à emporter
+- `StatutCommande` : workflow complet de création à paiement / annulation
+- `DetailCommandeRequest` / `DetailCommandeResponse` : détails ligne de plat
+- `CommandeRequest` : création commande avec détails et contexte
+- `CommandeResponse` : entité complète avec montant total, infos serveur/table, bloc annulation et satisfaction
+- `ModePaiement` : 3 modes encaissement `ESPECES`, `CARTE`, `MOBILE_MONEY`
+- `PaiementRequest` / `PaiementResponse` : flux paiement caisse avec pourboire
 
 ---
 
