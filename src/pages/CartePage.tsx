@@ -16,7 +16,7 @@ import type { Plat } from '../types/plat';
 import type { DetailCommandeRequest } from '../types/commande';
 import type { Onglet, Categorie, LignePanier } from '../ui/uiCarte/types';
 
-const API_WS = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_WS = import.meta.env.VITE_API_BASE_URL;
 
 export default function CartePage() {
   const [searchParams] = useSearchParams();
@@ -40,7 +40,7 @@ export default function CartePage() {
       await fetchMenu();
       try {
         const axios = (await import('axios')).default;
-        const API = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        const API = import.meta.env.VITE_API_BASE_URL;
         const res = await axios.get(`${API}/api/tables`);
         const table = res.data.find((t: { numeroTable: number; id: number }) => t.numeroTable === numeroTable);
         if (table) {
