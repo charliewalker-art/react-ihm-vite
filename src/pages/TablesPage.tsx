@@ -3,6 +3,7 @@ import { Plus, Loader2, LayoutGrid, Filter } from "lucide-react";
 import Layout from "../components/Layout";
 import { TableCard } from "../ui/uiTables/TableCard";
 import { CreateTableModal } from "../ui/uiTables/CreateTableModal";
+import { QRCodeModal } from "../ui/uiTables/QRCodeModal"; // ← nouveau
 import { useTable } from "../hooks/useTable";
 import { useAuth } from "../hooks/useAuth";
 import type { TableResponse, TableRequest, StatutTable } from "../types/table";
@@ -26,6 +27,7 @@ const TablesPage = () => {
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [filtre, setFiltre] = useState<StatutTable | "TOUTES">("TOUTES");
+  const [tableQR, setTableQR] = useState<TableResponse | null>(null); // ← nouveau
 
   const fetchTables = async () => {
     try {
@@ -151,6 +153,7 @@ const TablesPage = () => {
                 onChangerStatut={handleChangerStatut}
                 onAcquitter={handleAcquitter}
                 onSupprimer={handleSupprimer}
+                onVoirQR={setTableQR} // ← nouveau
                 isLoading={loadingId === table.id}
                 canDelete={isManager}
               />
@@ -159,10 +162,19 @@ const TablesPage = () => {
         )}
       </div>
 
+      {/* Modal création table */}
       {showModal && (
         <CreateTableModal
           onClose={() => setShowModal(false)}
           onSubmit={handleCreate}
+        />
+      )}
+
+      {/* Modal QR Code ← nouveau */}
+      {tableQR && (
+        <QRCodeModal
+          table={tableQR}
+          onClose={() => setTableQR(null)}
         />
       )}
     </Layout>

@@ -1,4 +1,4 @@
-import { Bell, BellOff, Trash2 } from "lucide-react";
+import { Bell, BellOff, Trash2, QrCode } from "lucide-react";
 import type { TableResponse, StatutTable } from "../../types/table";
 import { StatutTableBadge } from "./StatutTableBadge";
 
@@ -28,6 +28,7 @@ interface TableCardProps {
   onChangerStatut: (id: number, statut: StatutTable) => void;
   onAcquitter: (id: number) => void;
   onSupprimer: (id: number) => void;
+  onVoirQR: (table: TableResponse) => void; // ← nouveau
   isLoading: boolean;
   canDelete: boolean;
 }
@@ -37,6 +38,7 @@ export const TableCard = ({
   onChangerStatut,
   onAcquitter,
   onSupprimer,
+  onVoirQR, // ← nouveau
   isLoading,
   canDelete,
 }: TableCardProps) => {
@@ -44,7 +46,6 @@ export const TableCard = ({
     <div className={`bg-white dark:bg-gray-900 rounded-2xl border-2 ${statutColors[table.statut]}
                      p-5 flex flex-col gap-4 hover:shadow-md dark:hover:shadow-gray-950/50
                      transition-all duration-200`}>
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30
@@ -53,8 +54,8 @@ export const TableCard = ({
             {table.numeroTable}
           </span>
         </div>
-
         <div className="flex items-center gap-2">
+
           {/* Alerte appel serveur */}
           {table.appelServeurActif && (
             <button
@@ -68,6 +69,17 @@ export const TableCard = ({
               Appel !
             </button>
           )}
+
+          {/* Bouton QR Code ← nouveau */}
+          <button
+            onClick={() => onVoirQR(table)}
+            className="p-2 rounded-xl text-gray-400 hover:bg-amber-50
+                       dark:hover:bg-amber-900/20 hover:text-amber-500
+                       dark:hover:text-amber-400 transition-all"
+            title="Voir le QR Code"
+          >
+            <QrCode size={15} />
+          </button>
 
           {/* Supprimer */}
           {canDelete && (
