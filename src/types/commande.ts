@@ -57,16 +57,16 @@ export interface CommandeResponse {
   statut: StatutCommande;
   servicePeriode: ServicePeriode;
   tableId?: number;
-  tableNumero?: number;
+  numeroTable?: number;
   serveurId?: number;
-  serveurNom?: string;
+  serveurNomComplet?: string;
   nomClientRetrait?: string;
   dateCreation: string;
   tempsAttenteEstime?: number;
   details: DetailCommandeResponse[];
   montantTotal: number;
   // Bloc annulation
-  annuleParNom?: string;
+  annuleParNomComplet?: string;
   motifAnnulation?: string;
   dateAnnulation?: string;
   // Bloc évaluation

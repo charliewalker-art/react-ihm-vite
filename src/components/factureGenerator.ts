@@ -33,7 +33,7 @@ export const genererFacturePDF = (
 
   const premiereCmd = groupeCommandes[0];
   let infoTable = '';
-  if (premiereCmd.tableNumero) infoTable = `Table : ${premiereCmd.tableNumero}`;
+  if (premiereCmd.numeroTable) infoTable = `Table : ${premiereCmd.numeroTable}`;
   else if (premiereCmd.tableId) infoTable = `Table : ${premiereCmd.tableId}`;
   else if (premiereCmd.nomClientRetrait) infoTable = `Client : ${premiereCmd.nomClientRetrait}`;
   else infoTable = `Commande # ${premiereCmd.id}`;

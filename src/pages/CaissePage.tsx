@@ -90,8 +90,8 @@ const EncaissementModal = ({
               {groupeCommandes.length > 1 ? `${groupeCommandes.length} Commandes` : `Commande #${premiereCmd.id}`}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-300 font-semibold">
-              {premiereCmd.tableNumero 
-                ? `Table ${premiereCmd.tableNumero}` 
+              {premiereCmd.numeroTable 
+                ? `Table ${premiereCmd.numeroTable}` 
                 : premiereCmd.tableId 
                   ? `Table ${premiereCmd.tableId}` 
                   : premiereCmd.nomClientRetrait 
@@ -213,8 +213,8 @@ const CarteGroupeCommande = ({
         <div className="flex items-center gap-2">
           <Wallet size={16} className="text-green-500" />
           <span className="font-bold text-gray-800 dark:text-white text-sm">
-            {premiereCmd.tableNumero 
-              ? `Table ${premiereCmd.tableNumero}` 
+            {premiereCmd.numeroTable 
+              ? `Table ${premiereCmd.numeroTable}` 
               : premiereCmd.tableId 
                 ? `Table ${premiereCmd.tableId}` 
                 : premiereCmd.nomClientRetrait 
@@ -302,7 +302,7 @@ export default function CaissePage() {
   // ─── Logique de regroupement basée sur tableId ───
   const commandesGroupees = Object.values(
     commandes.reduce((acc, cmd) => {
-      const idTable = cmd.tableId ?? cmd.tableNumero;
+      const idTable = cmd.tableId ?? cmd.numeroTable;
       const key = idTable ? `table-${idTable}` : `emporter-${cmd.id}`;
       
       if (!acc[key]) acc[key] = [];

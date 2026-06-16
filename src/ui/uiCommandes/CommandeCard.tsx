@@ -61,7 +61,7 @@ export const CommandeCard = ({
   const typeLabel =
     commande.typeCommande === 'A_EMPORTER'
       ? `À emporter — ${commande.nomClientRetrait ?? ''}`
-      : `Table ${commande.tableNumero ?? '?'}`;
+      : `Table ${commande.numeroTable ?? '?'}`;
 
   // Quelles actions montrer selon le rôle et le statut
   const peutValider =
@@ -114,10 +114,10 @@ export const CommandeCard = ({
               <Clock size={11} />
               {minutesDepuisCreation} min
             </span>
-            {commande.serveurNom && (
+            {commande.serveurNomComplet && (
               <span className="flex items-center gap-1">
                 <User size={11} />
-                {commande.serveurNom}
+                {commande.serveurNomComplet}
               </span>
             )}
             <span className="text-gray-300">#{commande.id}</span>
