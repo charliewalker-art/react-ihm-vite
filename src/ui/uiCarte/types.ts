@@ -9,9 +9,9 @@ export interface LignePanier {
   note: string;
 }
 
-export const CATEGORIES: { value: Categorie; label: string; emoji: string }[] = [
-  { value: 'ENTREE', label: 'Entrées', emoji: '🥗' },
-  { value: 'PLAT', label: 'Plats', emoji: '🍽️' },
-  { value: 'DESSERT', label: 'Desserts', emoji: '🍰' },
-  { value: 'BOISSON', label: 'Boissons', emoji: '🥤' },
+export const CATEGORIES: { value: Categorie; label: string }[] = [
+  { value: 'ENTREE', label: 'Entrées' },
+  { value: 'PLAT', label: 'Plats' },
+  { value: 'DESSERT', label: 'Desserts' },
+  { value: 'BOISSON', label: 'Boissons' },
 ];

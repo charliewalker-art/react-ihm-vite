@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Wallet, Loader2, RefreshCw, CreditCard, Banknote, Smartphone, CheckCircle2, X } from 'lucide-react';
 import Layout from '../components/Layout';
-//import { useCommande } from '../hooks/useCommande';
 import { usePaiement } from '../hooks/usePaiement';
 import { useAuth } from '../hooks/useAuth';
 import { useWebSocket } from '../hooks/useWebSocket';
 import type { CommandeResponse, ModePaiement } from '../types/commande';
+
+// Importation de l'utilitaire de génération de facture PDF
+import { genererFacturePDF } from '../components/factureGenerator';
 
 // ─── Config modes de paiement ─────────────────────────────────────────────────
 
@@ -15,15 +17,15 @@ const MODES_PAIEMENT: { value: ModePaiement; label: string; icon: React.ReactNod
   { value: 'MOBILE_MONEY', label: 'Mobile Money', icon: <Smartphone size={18} /> },
 ];
 
-// ─── Modal encaissement ───────────────────────────────────────────────────────
+// ─── Modal encaissement (Gère un groupe de commandes) ─────────────────────────
 
 const EncaissementModal = ({
-  commande,
+  groupeCommandes,
   caissierId,
   onClose,
   onSuccess,
 }: {
-  commande: CommandeResponse;
+  groupeCommandes: CommandeResponse[];
   caissierId: number;
   onClose: () => void;
   onSuccess: () => void;
@@ -33,20 +35,32 @@ const EncaissementModal = ({
   const [pourboire, setPourboire] = useState<string>('0');
   const [erreur, setErreur] = useState<string | null>(null);
 
+  const montantTotalGroupe = groupeCommandes.reduce((sum, cmd) => sum + cmd.montantTotal, 0);
+  const premiereCmd = groupeCommandes[0];
+
   const handleEncaisser = async () => {
     setErreur(null);
     try {
-      await encaisser({
-        commandeId: commande.id,
-        caissierId,
-        montantTotal: commande.montantTotal,
-        pourboire: parseFloat(pourboire) || 0,
-        modePaiement,
-      });
+      // 1. Enregistrement de chaque commande du groupe auprès de l'API
+      for (let i = 0; i < groupeCommandes.length; i++) {
+        const cmd = groupeCommandes[i];
+        await encaisser({
+          commandeId: cmd.id,
+          caissierId,
+          montantTotal: cmd.montantTotal,
+          pourboire: i === 0 ? parseFloat(pourboire) || 0 : 0,
+          modePaiement,
+        });
+      }
+
+      // 2. Génération et téléchargement automatique du ticket de caisse PDF
+      genererFacturePDF(groupeCommandes, modePaiement, parseFloat(pourboire) || 0);
+
+      // 3. Rafraîchissement de l'état et fermeture
       onSuccess();
       onClose();
     } catch {
-      setErreur('Erreur lors de l\'encaissement. Veuillez réessayer.');
+      setErreur("Erreur lors de l'encaissement du groupe. Veuillez réessayer.");
     }
   };
 
@@ -73,27 +87,33 @@ const EncaissementModal = ({
           {/* Récap commande */}
           <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 flex flex-col gap-2">
             <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-              Commande #{commande.id}
+              {groupeCommandes.length > 1 ? `${groupeCommandes.length} Commandes` : `Commande #${premiereCmd.id}`}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {commande.tableNumero
-                ? `Table ${commande.tableNumero}`
-                : commande.nomClientRetrait
-                  ? `À emporter — ${commande.nomClientRetrait}`
-                  : `Commande #${commande.id}`
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-semibold">
+              {premiereCmd.tableNumero 
+                ? `Table ${premiereCmd.tableNumero}` 
+                : premiereCmd.tableId 
+                  ? `Table ${premiereCmd.tableId}` 
+                  : premiereCmd.nomClientRetrait 
+                    ? `À emporter — ${premiereCmd.nomClientRetrait}` 
+                    : `Commande #${premiereCmd.id}`
               }
             </p>
-            <div className="flex flex-col gap-1 mt-1">
-              {commande.details.map((d, i) => (
-                <p key={i} className="text-xs text-gray-500 dark:text-gray-400">
-                  {d.quantite}× {d.platNom} — {d.sousTotal.toLocaleString('fr-MG')} Ar
-                </p>
-              ))}
+            
+            <div className="flex flex-col gap-1 mt-1 max-h-32 overflow-y-auto">
+              {groupeCommandes.map(cmd => 
+                cmd.details.map((d, i) => (
+                  <p key={`${cmd.id}-${i}`} className="text-xs text-gray-500 dark:text-gray-400">
+                    {d.quantite}× {d.platNom} — {d.sousTotal.toLocaleString('fr-MG')} Ar
+                  </p>
+                ))
+              )}
             </div>
+            
             <div className="border-t border-amber-200 dark:border-amber-700 mt-2 pt-2 flex justify-between">
-              <span className="font-bold text-gray-800 dark:text-white text-sm">Total</span>
+              <span className="font-bold text-gray-800 dark:text-white text-sm">Total à payer</span>
               <span className="font-bold text-amber-600 dark:text-amber-400 text-sm">
-                {commande.montantTotal.toLocaleString('fr-MG')} Ar
+                {montantTotalGroupe.toLocaleString('fr-MG')} Ar
               </span>
             </div>
           </div>
@@ -124,7 +144,7 @@ const EncaissementModal = ({
           {/* Pourboire */}
           <div>
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">
-              Pourboire (Ar)
+              Pourboire global (Ar)
             </label>
             <input
               type="number"
@@ -142,7 +162,7 @@ const EncaissementModal = ({
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 flex justify-between items-center">
             <span className="text-sm text-gray-600 dark:text-gray-400">Total encaissé</span>
             <span className="font-bold text-gray-900 dark:text-white">
-              {(commande.montantTotal + (parseFloat(pourboire) || 0)).toLocaleString('fr-MG')} Ar
+              {(montantTotalGroupe + (parseFloat(pourboire) || 0)).toLocaleString('fr-MG')} Ar
             </span>
           </div>
 
@@ -172,71 +192,80 @@ const EncaissementModal = ({
   );
 };
 
-// ─── Carte commande caisse ────────────────────────────────────────────────────
+// ─── Carte commande caisse (Gère un groupe) ───────────────────────────────────
 
-const CarteCommande = ({
-  commande,
+const CarteGroupeCommande = ({
+  groupe,
   onEncaisser,
 }: {
-  commande: CommandeResponse;
-  onEncaisser: (commande: CommandeResponse) => void;
-}) => (
-  <div className="rounded-2xl border border-gray-200 dark:border-gray-700
-    bg-white dark:bg-gray-900 flex flex-col overflow-hidden shadow-sm">
+  groupe: CommandeResponse[];
+  onEncaisser: (groupe: CommandeResponse[]) => void;
+}) => {
+  const premiereCmd = groupe[0];
+  const montantTotalGroupe = groupe.reduce((sum, cmd) => sum + cmd.montantTotal, 0);
 
-    {/* Header */}
-    <div className="px-4 py-3 bg-green-50 dark:bg-green-900/20 flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Wallet size={16} className="text-green-500" />
-        <span className="font-bold text-gray-800 dark:text-white text-sm">
-          {commande.tableNumero
-            ? `Table ${commande.tableNumero}`
-            : commande.nomClientRetrait
-              ? `À emporter — ${commande.nomClientRetrait}`
-              : `Commande #${commande.id}`
-          }
-        </span>
-      </div>
-      <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100
-        dark:bg-green-900/40 border border-green-200 dark:border-green-700 px-2.5 py-1 rounded-full">
-        En attente paiement
-      </span>
-    </div>
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-700
+      bg-white dark:bg-gray-900 flex flex-col overflow-hidden shadow-sm">
 
-    {/* Détails */}
-    <div className="px-4 py-3 flex flex-col gap-1.5 flex-1">
-      {commande.details.map((d, i) => (
-        <div key={i} className="flex justify-between items-center text-sm">
-          <span className="text-gray-600 dark:text-gray-400">
-            {d.quantite}× {d.platNom}
-          </span>
-          <span className="font-semibold text-gray-800 dark:text-white">
-            {d.sousTotal.toLocaleString('fr-MG')} Ar
+      {/* Header */}
+      <div className="px-4 py-3 bg-green-50 dark:bg-green-900/20 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Wallet size={16} className="text-green-500" />
+          <span className="font-bold text-gray-800 dark:text-white text-sm">
+            {premiereCmd.tableNumero 
+              ? `Table ${premiereCmd.tableNumero}` 
+              : premiereCmd.tableId 
+                ? `Table ${premiereCmd.tableId}` 
+                : premiereCmd.nomClientRetrait 
+                  ? `À emporter — ${premiereCmd.nomClientRetrait}` 
+                  : `Commande #${premiereCmd.id}`
+            }
           </span>
         </div>
-      ))}
-    </div>
-
-    {/* Total + bouton */}
-    <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
-      <div>
-        <p className="text-xs text-gray-400">Total</p>
-        <p className="font-bold text-amber-600 dark:text-amber-400 text-lg">
-          {commande.montantTotal.toLocaleString('fr-MG')} Ar
-        </p>
+        <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100
+          dark:bg-green-900/40 border border-green-200 dark:border-green-700 px-2.5 py-1 rounded-full">
+          {groupe.length > 1 ? `${groupe.length} commandes` : '1 commande'}
+        </span>
       </div>
-      <button
-        onClick={() => onEncaisser(commande)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl
-          bg-green-500 hover:bg-green-600 text-white text-sm font-semibold
-          transition-all shadow-sm shadow-green-200 dark:shadow-green-900/30"
-      >
-        <Wallet size={14} />
-        Encaisser
-      </button>
+
+      {/* Détails */}
+      <div className="px-4 py-3 flex flex-col gap-1.5 flex-1 max-h-40 overflow-y-auto">
+        {groupe.map(cmd => 
+          cmd.details.map((d, i) => (
+            <div key={`${cmd.id}-${i}`} className="flex justify-between items-center text-sm">
+              <span className="text-gray-600 dark:text-gray-400">
+                {d.quantite}× {d.platNom}
+              </span>
+              <span className="font-semibold text-gray-800 dark:text-white">
+                {d.sousTotal.toLocaleString('fr-MG')} Ar
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Total + bouton */}
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs text-gray-400">Total global</p>
+          <p className="font-bold text-amber-600 dark:text-amber-400 text-lg">
+            {montantTotalGroupe.toLocaleString('fr-MG')} Ar
+          </p>
+        </div>
+        <button
+          onClick={() => onEncaisser(groupe)}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl
+            bg-green-500 hover:bg-green-600 text-white text-sm font-semibold
+            transition-all shadow-sm shadow-green-200 dark:shadow-green-900/30"
+        >
+          <Wallet size={14} />
+          Encaisser
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ─── Page principale ──────────────────────────────────────────────────────────
 
@@ -248,7 +277,7 @@ export default function CaissePage() {
   const [commandes, setCommandes] = useState<CommandeResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [commandeAEncaisser, setCommandeAEncaisser] = useState<CommandeResponse | null>(null);
+  const [groupeAEncaisser, setGroupeAEncaisser] = useState<CommandeResponse[] | null>(null);
 
   const charger = useCallback(async () => {
     setLoading(true);
@@ -268,8 +297,19 @@ export default function CaissePage() {
     charger();
   }, [charger]);
 
-  // WebSocket temps réel
   useWebSocket(charger);
+
+  // ─── Logique de regroupement basée sur tableId ───
+  const commandesGroupees = Object.values(
+    commandes.reduce((acc, cmd) => {
+      const idTable = cmd.tableId ?? cmd.tableNumero;
+      const key = idTable ? `table-${idTable}` : `emporter-${cmd.id}`;
+      
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(cmd);
+      return acc;
+    }, {} as Record<string, CommandeResponse[]>)
+  );
 
   return (
     <Layout>
@@ -283,7 +323,7 @@ export default function CaissePage() {
               Caisse
             </h1>
             <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm">
-              {commandes.length} commande{commandes.length > 1 ? 's' : ''} en attente de paiement
+              {commandesGroupees.length} groupe{commandesGroupees.length > 1 ? 's' : ''} en attente de paiement
             </p>
           </div>
 
@@ -322,24 +362,24 @@ export default function CaissePage() {
         )}
 
         {/* Grille */}
-        {commandes.length > 0 && (
+        {commandesGroupees.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {commandes.map((c) => (
-              <CarteCommande
-                key={c.id}
-                commande={c}
-                onEncaisser={setCommandeAEncaisser}
+            {commandesGroupees.map((groupe, index) => (
+              <CarteGroupeCommande
+                key={index}
+                groupe={groupe}
+                onEncaisser={setGroupeAEncaisser}
               />
             ))}
           </div>
         )}
 
         {/* Modal encaissement */}
-        {commandeAEncaisser && (
+        {groupeAEncaisser && (
           <EncaissementModal
-            commande={commandeAEncaisser}
+            groupeCommandes={groupeAEncaisser}
             caissierId={caissierId}
-            onClose={() => setCommandeAEncaisser(null)}
+            onClose={() => setGroupeAEncaisser(null)}
             onSuccess={charger}
           />
         )}

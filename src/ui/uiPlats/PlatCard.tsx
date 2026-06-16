@@ -34,7 +34,7 @@ export const PlatCard: React.FC<PlatCardProps> = ({ plat, onEdit, onToggle, onDe
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <h3 className="font-bold text-gray-800 dark:text-white">{plat.nom}</h3>
-            <span className="font-bold text-amber-600 dark:text-amber-400">{plat.prix.toFixed(2)} €</span>
+            <span className="font-bold text-amber-600 dark:text-amber-400">{plat.prix.toFixed(2)} Ar</span>
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">{plat.description}</p>
         </div>

@@ -12,7 +12,7 @@ const config: Record<string, { label: string; icon: React.ReactNode; className: 
     className: 'bg-orange-100 text-orange-700 border-orange-200',
   },
   PRETE: {
-    label: '🎉 Prête !',
+    label: ' Prête !',
     icon: <CheckCircle2 size={12} />,
     className: 'bg-green-100 text-green-700 border-green-200 animate-pulse',
   },

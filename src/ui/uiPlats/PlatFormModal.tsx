@@ -73,7 +73,7 @@ export const PlatFormModal: React.FC<PlatFormModalProps> = ({ isOpen, onClose, o
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Prix (€)
+                Prix (Ar)
               </label>
               <input required type="number" step="0.01" min={0} value={formData.prix} onChange={e => setFormData({...formData, prix: parseFloat(e.target.value)})} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all" />
             </div>
@@ -94,7 +94,7 @@ export const PlatFormModal: React.FC<PlatFormModalProps> = ({ isOpen, onClose, o
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
-            <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all min-h-[80px]" />
+            <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all min-h-20" />
           </div>
 
           <div>

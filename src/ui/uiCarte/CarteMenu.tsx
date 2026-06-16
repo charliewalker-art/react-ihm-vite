@@ -25,13 +25,13 @@ export const CarteMenu = ({
           <button
             key={cat.value}
             onClick={() => onCategorie(cat.value)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+            className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
               ${categorieActive === cat.value
                 ? 'bg-amber-500 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
           >
-            {cat.emoji} {cat.label}
+             {cat.label}
           </button>
         ))}
       </div>
@@ -39,7 +39,7 @@ export const CarteMenu = ({
       {/* Titre catégorie */}
       <div className="px-4 mb-3">
         <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          {CATEGORIES.find((c) => c.value === categorieActive)?.emoji}{' '}
+          {CATEGORIES.find((c) => c.value === categorieActive)?.label}{' '}
           {CATEGORIES.find((c) => c.value === categorieActive)?.label}
         </h2>
       </div>
@@ -60,9 +60,9 @@ export const CarteMenu = ({
               >
                 {/* Image */}
                 {plat.imageUrl ? (
-                  <img src={plat.imageUrl} alt={plat.nom} className="w-24 h-24 object-cover flex-shrink-0" />
+                  <img src={plat.imageUrl} alt={plat.nom} className="w-24 h-24 object-cover shrink-0" />
                 ) : (
-                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                  <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
                     <UtensilsCrossed size={24} className="text-gray-300 dark:text-gray-600" />
                   </div>
                 )}

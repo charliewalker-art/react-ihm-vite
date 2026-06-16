@@ -8,7 +8,7 @@ import ProfilPage from "./pages/ProfilPage";
 import PlatsPage from "./pages/PlatsPage";
 import CommandesPage from "./pages/CommandesPage";
 import CuisinePage from "./pages/Cuisinepage";
-import CaissePage from "./pages/CaissePage";
+import CaissePage from "./pages/CaissePage.tsx";
 import CartePage   from "./pages/CartePage";
 
 const NotFound = () => (
