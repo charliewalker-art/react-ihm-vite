@@ -86,8 +86,8 @@ const CarteCommande = ({
             : <Clock size={16} className="text-amber-500" />
           }
           <span className="font-bold text-gray-800 dark:text-white text-sm">
-            {commande.tableNumero
-              ? `Table ${commande.tableNumero}`
+            {commande.numeroTable
+              ? `Table ${commande.numeroTable}`
               : commande.nomClientRetrait
                 ? `À emporter — ${commande.nomClientRetrait}`
                 : `Commande #${commande.id}`
