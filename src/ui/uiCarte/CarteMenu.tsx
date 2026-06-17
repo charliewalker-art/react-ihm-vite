@@ -1,4 +1,5 @@
-import { UtensilsCrossed, Plus, Minus, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { UtensilsCrossed, Plus, Minus, AlertTriangle, LayoutGrid } from 'lucide-react';
 import type { Plat } from '../../types/plat';
 import type { LignePanier, Categorie } from './types';
 import { CATEGORIES } from './types';
@@ -15,18 +16,41 @@ interface CarteMenuProps {
 export const CarteMenu = ({
   plats, panier, categorieActive, onCategorie, onAjouter, onDiminuer
 }: CarteMenuProps) => {
-  const platsFiltres = plats.filter((p) => p.categorie === categorieActive);
+  // Filtre "Tous" géré localement : on n'a pas besoin de toucher au type Categorie
+  // ni au state du parent pour ça, on ignore juste categorieActive quand il est actif.
+  const [afficherTous, setAfficherTous] = useState(false);
+
+  const platsFiltres = afficherTous
+    ? plats
+    : plats.filter((p) => p.categorie === categorieActive);
+
+  const titreSection = afficherTous
+    ? 'Tous les plats'
+    : CATEGORIES.find((c) => c.value === categorieActive)?.label;
 
   return (
     <div>
       {/* Filtres catégories */}
       <div className="flex gap-2 px-4 py-3 overflow-x-auto">
+        <button
+          onClick={() => setAfficherTous(true)}
+          className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+            ${afficherTous
+              ? 'bg-amber-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+        >
+          <LayoutGrid size={12} /> Tous
+        </button>
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
-            onClick={() => onCategorie(cat.value)}
+            onClick={() => {
+              setAfficherTous(false);
+              onCategorie(cat.value);
+            }}
             className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
-              ${categorieActive === cat.value
+              ${!afficherTous && categorieActive === cat.value
                 ? 'bg-amber-500 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
@@ -39,8 +63,7 @@ export const CarteMenu = ({
       {/* Titre catégorie */}
       <div className="px-4 mb-3">
         <h2 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-          {CATEGORIES.find((c) => c.value === categorieActive)?.label}{' '}
-          {CATEGORIES.find((c) => c.value === categorieActive)?.label}
+          {titreSection}
         </h2>
       </div>
 

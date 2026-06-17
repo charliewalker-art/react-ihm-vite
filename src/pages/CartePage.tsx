@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Bell } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -23,7 +23,7 @@ export default function CartePage() {
   const numeroTable = parseInt(searchParams.get('table') ?? '1');
 
   // fetchTableByNumero ajouté ici
-  const { plats, commandes, loading, fetchMenu, fetchCommandesTable, fetchTableByNumero, passerCommande, appellerServeur } =
+  const { plats, commandes, loading, fetchMenu, fetchCommandesTable, fetchTableByNumero, passerCommande } =
     useCartePublique();
 
   const [darkMode, setDarkMode] = useState(false);
@@ -33,7 +33,6 @@ export default function CartePage() {
   const [noteModal, setNoteModal] = useState<{ plat: Plat; note: string } | null>(null);
   const [commandeEnCours, setCommandeEnCours] = useState(false);
   const [succesCommande, setSuccesCommande] = useState(false);
-  const [appelEnvoye, setAppelEnvoye] = useState(false);
   const [tableId, setTableId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -112,14 +111,6 @@ export default function CartePage() {
     finally { setCommandeEnCours(false); }
   };
 
-  const handleAppelerServeur = async () => {
-    try {
-      await appellerServeur(numeroTable);
-      setAppelEnvoye(true);
-      setTimeout(() => setAppelEnvoye(false), 5000);
-    } catch { /* silencieux */ }
-  };
-
   return (
     <div className={darkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex flex-col transition-colors duration-300">
@@ -128,10 +119,8 @@ export default function CartePage() {
           <CarteHeader
             numeroTable={numeroTable}
             nbArticles={nbArticles}
-            appelEnvoye={appelEnvoye}
             darkMode={darkMode}
             onToggleDark={() => setDarkMode((d) => !d)}
-            onAppelerServeur={handleAppelerServeur}
             onOnglet={setOnglet}
           />
         </div>
@@ -141,11 +130,9 @@ export default function CartePage() {
           <CarteSideNav
             onglet={onglet}
             nbArticles={nbArticles}
-            appelEnvoye={appelEnvoye}
             darkMode={darkMode}
             onToggleDark={() => setDarkMode((d) => !d)}
             onOnglet={setOnglet}
-            onAppelerServeur={handleAppelerServeur}
           />
 
           <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
@@ -163,13 +150,6 @@ export default function CartePage() {
                   text-green-700 dark:text-green-400 text-sm font-semibold flex items-center gap-2">
                   <CheckCircle2 size={16} />
                   Commande envoyée en cuisine !
-                </div>
-              )}
-              {appelEnvoye && (
-                <div className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 rounded-2xl px-4 py-3
-                  text-amber-700 dark:text-amber-400 text-sm font-semibold flex items-center gap-2">
-                  <Bell size={16} />
-                  Le serveur arrive !
                 </div>
               )}
             </div>
@@ -207,9 +187,7 @@ export default function CartePage() {
         <CarteBottomNav
           onglet={onglet}
           nbArticles={nbArticles}
-          appelEnvoye={appelEnvoye}
           onOnglet={setOnglet}
-          onAppelerServeur={handleAppelerServeur}
         />
 
         {noteModal && (

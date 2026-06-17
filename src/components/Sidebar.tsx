@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import {
+  LayoutDashboard,
   LayoutGrid,
   ClipboardList,
   BookOpen,
@@ -11,9 +12,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-
 const menuByRole: Record<string, { label: string; icon: any; route: string }[]> = {
   MANAGER: [
+    { label: "Tableau de bord", icon: LayoutDashboard, route: "/manager" },
     { label: "Tables", icon: LayoutGrid, route: "/tables" },
     { label: "Commandes", icon: ClipboardList, route: "/commandes" },
     { label: "Menu", icon: BookOpen, route: "/menu" },
@@ -32,23 +33,19 @@ const menuByRole: Record<string, { label: string; icon: any; route: string }[]> 
     { label: "Caisse", icon: CreditCard, route: "/caisse" },
   ],
 };
-
 const Sidebar = () => {
   const { getUser } = useAuth();
   const user = getUser();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-
   const menu = menuByRole[user?.role || ""] || [];
-
   return (
     <aside className={`h-screen sticky top-0 flex flex-col
                        bg-white dark:bg-gray-900
                        border-r border-gray-100 dark:border-gray-800
                        transition-all duration-300 shrink-0
                        ${collapsed ? "w-16" : "w-56"}`}>
-
       {/* Toggle collapse */}
       <div className="flex justify-end p-3 border-b border-gray-100 dark:border-gray-800">
         <button
@@ -59,13 +56,11 @@ const Sidebar = () => {
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
-
       {/* Menu items */}
       <nav className="flex-1 p-2 space-y-1 overflow-hidden">
         {menu.map((item) => {
           const Icon = item.icon;
           const active = location.pathname === item.route;
-
           return (
             <button
               key={item.route}
@@ -88,5 +83,4 @@ const Sidebar = () => {
     </aside>
   );
 };
-
 export default Sidebar;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LayoutGrid, ClipboardList, BookOpen, TrendingUp, Gift, AlertTriangle, ChefHat, Users, Wallet } from 'lucide-react';
+import { LayoutGrid, ClipboardList, BookOpen, TrendingUp, Gift, AlertTriangle } from 'lucide-react';
 import { DashboardCard } from './DashboardCard';
 import { usePaiement } from '../../hooks/usePaiement';
 import { useCommande } from '../../hooks/useCommande';
@@ -123,27 +123,6 @@ export const DashboardManager = () => {
             icon={BookOpen}
             color="bg-purple-500"
             route="/menu"
-          />
-          <DashboardCard
-            title="Cuisine"
-            description="Voir les commandes en préparation"
-            icon={ChefHat}
-            color="bg-orange-500"
-            route="/cuisine"
-          />
-          <DashboardCard
-            title="Caisse"
-            description="Encaisser les commandes en attente"
-            icon={Wallet}
-            color="bg-amber-500"
-            route="/caisse"
-          />
-          <DashboardCard
-            title="Personnel"
-            description="Gérer les comptes du staff"
-            icon={Users}
-            color="bg-pink-500"
-            route="/users"
           />
         </div>
       </div>
