@@ -77,6 +77,4 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute><ProfilPage /></ProtectedRoute>,
   },
   { path: "*", element: <NotFound /> },
-], {
-  basename: "/resto",
-});
+]);
